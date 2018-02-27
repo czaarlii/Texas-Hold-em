@@ -1,0 +1,32 @@
+﻿#ABNF 1.0;
+language pl-pl;
+mode voice;
+root $root;
+tag-format <semantics/1.0-literals>;
+
+$root = $komenda | $stawiam $ile;
+
+$komenda = czekam {Czekam} | pas {Pass} | wabank {Va banque} | dokładam {Dokladam} | wycofuję się {Koniec};
+$stawiam = stawiam {Stawiam};
+$ile = [$tys] [$sto] $dzies |
+        [$tys] $sto [$dzies] |
+        $tys [$sto] [$dzies];
+$tys = tysiąc {1000};
+$sto = dziewięćset {900} |
+        osiemset {800} |
+        siedemset {700} |
+        sześćset {600} |
+        pięćset {500} |
+        czterysta {400} |
+        trzysta {300} |
+        dwieście {200} |
+        sto {100};
+$dzies = dziewięćdziesiąt {90} |
+        osiemdziesiąt {80} |
+        siedemdziesiąt {70} |
+        sześćdziesiąt {60} |
+        pięćdziesiąt {50} |
+        czterdzieści {40} |
+        trzydzieści {30} |
+        dwadzieścia {20} |
+        dziesięć {10};

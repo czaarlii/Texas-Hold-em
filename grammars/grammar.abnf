@@ -1,0 +1,35 @@
+#ABNF 1.0;
+language pl-pl;
+mode voice;
+root $root;
+tag-format <semantics/1.0-literals>;
+
+$root = $komenda | $stawiam $ile;
+
+$komenda = sprawdzam {Sprawdzam} | pas {Pass} | wabank {Vabank} | dokladam {Dokladam};
+$stawiam = stawiam {Stawiam};
+$ile = [$tys] [$sto] [$dzies] $piec |
+        [$tys] [$sto] $nascie |
+        [$tys] [$sto] $dzies [$piec] |
+        [$tys] $sto [($dzies [$piec] | $nascie)] |
+        $tys [$sto] [($dzies [$piec] | $nascie)];
+$tys = dwa tysiące {2000} | tysiąc {1000};
+$sto = dziewięćset {900} |
+        osiemset {800} |
+        siedemset {700} |
+        sześćset {600} |
+        pięćset {500} |
+        czterysta {400} |
+        trzysta {300} |
+        dwieście {200} |
+        sto {100};
+$dzies = dziewięćdziesiąt {90} |
+        osiemdziesiąt {80} |
+        siedemdziesiąt {70} |
+        sześćdziesiąt {60} |
+        pięćdziesiąt {50} |
+        czterdzieści {40} |
+        trzydzieści {30} |
+        dwadzieścia {20};
+$piec = pięć {5};
+$nascie = piętnaście {15} | dziesięć {10};
