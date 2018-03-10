@@ -1,6 +1,4 @@
-﻿BRVfunctions v 1.0
-
-## Wymagania (bez tego nie zadziała):
+﻿## Wymagania (bez tego nie zadziała):
 
 - VPN do sieci AGH (http://panel.agh.edu.pl/docs/openvpn/) jeżeli jestecie poza
 
