@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""BRVfunctions v1.8"""
 """Script by BaronVladziu"""
 
 def printad(): #funkcja do wypisywania znalezionych mikrofonow
@@ -46,6 +47,7 @@ def getReply(canRaise):
     RATE = 44100
     CHUNK = 2048
     WAVE_OUTPUT_FILENAME = "temp.wav"
+    DISTRUST_FACTOR = 0.15
      
     audio = pyaudio.PyAudio()
     
@@ -53,20 +55,20 @@ def getReply(canRaise):
     stream = audio.open(format=FORMAT, channels=CHANNELS,
                     rate=RATE, input=True,
                     frames_per_buffer=CHUNK)
-    mn = 0
+    walkingMean = 0
+    time = 0
     frames = []
     print("nagrywanie...")
-
-    i = 0
-    while i < 20:
+    
+    while time < 20:
         data = stream.read(CHUNK)
         frames.append(data)
-        mn2 = numpy.average(numpy.abs(numpy.fromstring(data, dtype=numpy.int16)))
-        if mn2 < mn:
-            i += 1
+        chunkMean = numpy.average(numpy.abs(numpy.fromstring(data, dtype=numpy.int16)))
+        if chunkMean < walkingMean:
+            time += 1
         else:
-            i = 0
-        mn = (mn+(0.01*mn2))/1.01
+            time = 0
+        walkingMean = (walkingMean+(0.01*chunkMean))/1.01
     print("nagrywanie zakończone")
     
     # stop Recording
@@ -80,6 +82,9 @@ def getReply(canRaise):
     waveFile.setframerate(RATE)
     waveFile.writeframes(b''.join(frames))
     waveFile.close()
+    
+    #check volume of recording
+    #TODO
     
     #analyze
     #if __name__ == '__main__':
@@ -100,21 +105,27 @@ def getReply(canRaise):
     
     recognizer = SarmataRecognizer(address)
     results = recognizer.recognize(audio, settings)
-
     player_answer_list = get_results(results)
-    if len(player_answer_list[1]) == 0:
+    
+    length = len(player_answer_list[1]);
+    if length == 0:
         return 'NO COMMAND DETECTED'
-    elif sorted(player_answer_list[1], key=takeSecond, reverse=True)[0][1] < 0.2:
+    sortedAnswerList = sorted(player_answer_list[1], key=takeSecond, reverse=True)
+    #print(sortedAnswerList)
+    if sortedAnswerList[0][1] < 2*DISTRUST_FACTOR:
         return 'NO COMMAND DETECTED'
-    if canRaise == True:
-        words = sorted(player_answer_list[1], key=takeSecond, reverse=True)[0][2].split()
-        if words[0] == 'Stawiam':
-            sum = 0
-            for i in range(len(words)):
-                if i > 0:
-                    sum = sum + int(words[i])
-            return 'Stawiam ' + str(sum)
-    return sorted(player_answer_list[1], key=takeSecond, reverse=True)[0][2]
+    if length >= 2:
+        if sortedAnswerList[0][1] - DISTRUST_FACTOR < sortedAnswerList[1][1]:
+            return 'NO COMMAND DETECTED'
+        if canRaise == True:
+            words = sortedAnswerList[0][2].split()
+            if words[0] == 'Stawiam':
+                sum = 0
+                for i in range(len(words)):
+                    if i > 0:
+                        sum = sum + int(words[i])
+                return 'Stawiam ' + str(sum)
+    return sortedAnswerList[0][2]
 
 def getreply_canraise():
     return getReply(True)
