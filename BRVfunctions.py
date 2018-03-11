@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""BRVfunctions v1.8"""
+"""BRVfunctions v1.9"""
 """Script by BaronVladziu"""
 
 def printad(): #funkcja do wypisywania znalezionych mikrofonow
@@ -43,11 +43,14 @@ def getReply(canRaise):
     import numpy
     
     FORMAT = pyaudio.paInt16
+    MAX_VALUE = 32767
     CHANNELS = 1
     RATE = 44100
     CHUNK = 2048
     WAVE_OUTPUT_FILENAME = "temp.wav"
-    DISTRUST_FACTOR = 0.15
+    DISTRUST_FACTOR = 0.1
+    TOO_LOUD_LIMIT = 0.99
+    TOO_QUIET_LIMIT = 0.4
      
     audio = pyaudio.PyAudio()
     
@@ -84,7 +87,15 @@ def getReply(canRaise):
     waveFile.close()
     
     #check volume of recording
-    #TODO
+    maxValue = 0
+    for chunk in frames:
+        for value in numpy.abs(numpy.fromstring(chunk, dtype=numpy.int16)):
+            if value > maxValue:
+                maxValue = value
+    if maxValue < MAX_VALUE * TOO_QUIET_LIMIT:
+        print("Zbyt cichy sygnał")
+    elif maxValue > MAX_VALUE * TOO_LOUD_LIMIT:
+        print("Zbyt głośny sygnał")
     
     #analyze
     #if __name__ == '__main__':
