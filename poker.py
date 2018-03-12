@@ -8,7 +8,7 @@ stan_gracza = {"w_grze": 0,
                "postawil": -3,
                "va bank": -4,
                "dolozyl": -5,
-               "konczy": -6
+               "skonczyl": -6
                }
 
 
@@ -32,7 +32,6 @@ class Stol:
         self.odkryte = 3
         self.stawki_graczy = [0] * ilosc_graczy
         self.pula = 0
-        self.najwyzsza_stawka = 10
 
     def wypisz_karty_na_stole(self):
         print("\nStol: ")
@@ -122,7 +121,7 @@ def podejmij_akcje(gracz, akcja, stol):
         stol.doloz_stawke(gracz, gracz.kapital)
         gracz.stan = stan_gracza["va bank"]
     elif akcja == -6:
-        gracz.stan = stan_gracza["konczy"]
+        gracz.stan = stan_gracza["skonczyl"]
     else:
         stol.doloz_stawke(gracz, int(akcja))
         gracz.podbicia += 1
@@ -130,10 +129,92 @@ def podejmij_akcje(gracz, akcja, stol):
     return
 
 
-def zresetuj_akcje(gracze):       #reset dla nowej rundy
+def czy_koniec_tury(gracze, stol, najw_stawka):
     for i in range(0, len(gracze)):
-        if gracze[i].stan != stan_gracza["spasowal"] and gracze[i].stan != stan_gracza["va bank"] :
-            gracze[i].stan = stan_gracza["w_grze"]
-        gracze[i].podbicia = 0
+        if not ((najw_stawka == stol.stawki_graczy[i] or gracze[i].stan == stan_gracza["va bank"])
+                and (gracze[i].stan == stan_gracza["czeka"] or
+                gracze[i].stan == stan_gracza["va bank"] or
+                gracze[i].stan == stan_gracza["postawil"])):
+            return False
+    return True
+
+
+def czy_wszyscy_spasowali(gracze):  #zwraca idx gracza jedynego w rundzie
+    w_grze = -1
+    jest_1_w_grze = False
+
+    for i in range(0, len(gracze)):
+        if gracze[i].stan != stan_gracza["spasowal"] and gracze[i].stan != stan_gracza["skonczyl"]:
+            if jest_1_w_grze:
+                return -1
+            else:
+                w_grze = i
+                jest_1_w_grze = True
+
+    return w_grze
+
+
+def czy_wszyscy_odpadli(gracze):
+    pozostal_idx = -1
+    pozostalo = 0
+
+    for g in gracze:
+        if g.stan != stan_gracza["skonczyl"]:
+            pozostal_idx = g.id
+            pozostalo += 1
+
+    if pozostalo > 1:
+        return -1
+    else:
+        return pozostal_idx
+
+
+def czy_ktos_allin(gracze):
+    for g in gracze:
+        if g.stan == stan_gracza["va bank"]:
+            return True
+    return False
+
+
+def liczba_graczy_w_licytacji(gracze):
+    i = 0
+    for g in gracze:
+        if g.stan != stan_gracza["skonczyl"] and g.stan != stan_gracza["va bank"] and g.stan != stan_gracza["spasowal"]:
+            i += 1
+    return i
+
+
+def rozdaj_pule(gracze, stol, wyniki):
+    if wyniki[0] < wyniki[1]:
+        print("\n***Zwyciezca rundy zostaje gracz 1!***")
+        gracze[0].kapital += stol.pula
+        stol.pula = 0
+    elif wyniki[1] < wyniki[0]:
+        print("\n***Zwyciezca rundy zostaje gracz 2!***")
+        gracze[1].kapital += stol.pula
+        stol.pula = 0
+    else:
+        print("\n***Nastapil remis w tej rundzie.***")
+        gracze[0].kapital += stol.pula / 2
+        gracze[1].kapital += stol.pula / 2
+        stol.pula = 0
+    return
+
+
+def zresetuj_akcje(gracze, do_poczatku=False):    # reset dla nowej rundy
+    if do_poczatku:
+        for i in range(0, len(gracze)):
+            if gracze[i].stan != stan_gracza["skonczyl"]:
+                gracze[i].stan = stan_gracza["w_grze"]
+
+            gracze[i].podbicia = 0
+    else:
+        for i in range(0, len(gracze)):
+            if gracze[i].stan != stan_gracza["spasowal"] \
+                and gracze[i].stan != stan_gracza["va bank"] \
+                    and gracze[i].stan != stan_gracza["skonczyl"]:
+                gracze[i].stan = stan_gracza["w_grze"]
+
+            gracze[i].podbicia = 0
     return
 
