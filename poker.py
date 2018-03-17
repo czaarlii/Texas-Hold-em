@@ -12,6 +12,26 @@ stan_gracza = {"w_grze": 0,
                }
 
 
+class PaczkaDoKlienta:   # do gry po lanie, dane od serwera
+    def __init__(self, stol='', akcja='', min=0, maks=0, podbicia=0, odp=False):
+        self.akcja_info = akcja
+        self.stol_info = stol
+        self.min_stawka = min
+        self.maks_stawka = maks
+        self.liczba_podbic = podbicia
+        self.wymagana_odp = odp
+
+    def czysc(self):
+        self.akcja_info = ''
+        self.stol_info = ''
+        self.wymagana_odp = False
+
+
+class PaczkaDoSerwera:     # dane od klienta
+    def __init__(self, odp):
+        self.odpowiedz = odp
+
+
 class Gracz:
     def __init__(self, id):
         self.id = id
@@ -21,9 +41,7 @@ class Gracz:
         self.podbicia = 0
 
     def wypisz_karty_gracza(self, nr):
-        print("Karty gracza %d" % nr)
-        Card.print_pretty_cards(self.reka)
-        return
+        return "Karty gracza %d" % nr + wypisz_karty(self.reka)
 
 
 class Stol:
@@ -34,15 +52,15 @@ class Stol:
         self.pula = 0
 
     def wypisz_karty_na_stole(self):
-        print("\nStol: ")
-        Card.print_pretty_cards(self.karty[0:self.odkryte])
-        return
+        return "\nStol: " + wypisz_karty(self.karty[0:self.odkryte])
 
     def doloz_stawke(self, gracz, stawka):
         gracz.kapital -= stawka
         self.stawki_graczy[gracz.id] += stawka
-        print("\n***Gracz %s dolozyl do stawki " %str(gracz.id+1), stawka, "***")
-        return
+        if gracz.kapital != 0:
+            return "\n***Gracz %d dolozyl do stawki " % (gracz.id+1) + str(stawka) + "***"
+        else:
+            return '\n***Gracz %d poszedl all-in i dolozyl do stawki ' % (gracz.id+1) + str(stawka) + "!***"
 
     def zbierz_do_puli(self):
         for i in range(0,2):
@@ -51,6 +69,19 @@ class Stol:
         return
 
 ############################################################################################
+
+
+def wypisz_karty(card_ints):
+    output = ''
+
+    for i in range(len(card_ints)):
+        c = card_ints[i]
+        if i != len(card_ints) - 1:
+            output += str(Card.int_to_pretty_str(c)) + ","
+        else:
+            output += str(Card.int_to_pretty_str(c)) + " "
+    return output
+
 
 def nastepny(n, max = 2):       #do iteracji
     n += 1
@@ -72,8 +103,7 @@ def sprawdz(n):     # do wczytania poprawnej odpowiedzi
 
 
 def wczytaj_odp(czy_mozna_podbic):      # tu będzie nasza funkcja głosowa, najważniejsza część projektu :)
-    print("\n")
-    odp = input("Nacisnij ENTER aby podjac akcje.")
+    odp = input("\nNacisnij ENTER aby podjac akcje.")
     with warnings.catch_warnings():
         if czy_mozna_podbic:
             odp = BRVfunctions.getreply_canraise()
@@ -109,24 +139,27 @@ def wczytaj_poprawna_odp(min_stawka, maks_stawka, ilosc_podbic):  #funkcja wczyt
                 return wart
 
         else:
-            print("\nNieprawidłowa akcja %s" %odp)
+            print("\nNieprawidłowa akcja %s" % odp)
 
 
 def podejmij_akcje(gracz, akcja, stol):
     if akcja == -1:
+        wiadomosc = "\n***Gracz %s spasowal. " % str(gracz.id + 1) + "***"
         gracz.stan = stan_gracza["spasowal"]
     elif akcja == -2:
+        wiadomosc = '***Gracz %d czeka.***' % (gracz.id+1)
         gracz.stan = stan_gracza["czeka"]
     elif akcja == -4:
-        stol.doloz_stawke(gracz, gracz.kapital)
+        wiadomosc = stol.doloz_stawke(gracz, gracz.kapital)
         gracz.stan = stan_gracza["va bank"]
     elif akcja == -6:
+        wiadomosc = "\n*****************Gracz %s poddał się!" % str(gracz.id + 1), "***************"
         gracz.stan = stan_gracza["skonczyl"]
     else:
-        stol.doloz_stawke(gracz, int(akcja))
+        wiadomosc = stol.doloz_stawke(gracz, int(akcja))
         gracz.podbicia += 1
         gracz.stan = stan_gracza["postawil"]
-    return
+    return wiadomosc
 
 
 def czy_koniec_tury(gracze, stol, najw_stawka):
