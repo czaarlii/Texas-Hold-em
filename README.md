@@ -1,6 +1,4 @@
-﻿BRVfunctions v 1.0
-
-## Wymagania (bez tego nie zadziała):
+﻿## Wymagania (bez tego nie zadziała):
 
 - VPN do sieci AGH (http://panel.agh.edu.pl/docs/openvpn/) jeżeli jestecie poza
 
@@ -27,7 +25,7 @@ Na Windowsie:
  
 
 
-W środku są dwie ważne funkcje:
+W środku są cztery ważne funkcje:
 - BRVprintad() - wypisuje wykrywane urządzenia do nagrywania
 - BRVgetreply_canraise() - nagrywa (samo wykrywa koniec wypowiedzi) i zwraca
 	całe wypowiedziane zdanie (patrz grammars/grammar.abnf),
@@ -35,6 +33,7 @@ W środku są dwie ważne funkcje:
 - BRVgetreply_cannotraise() - to samo, co powyższa, ale możliwe są jedynie
 	komendy "Czekam" i "Pass".
 	Przeznaczone do wykrywania komend, kiedy nie można już podbić stawki
+- BRVrecorder() - prosi o wypowiadanie komend i zapisuje nagrania do testów
 
 
 Przykładowe ich użycie jest w pliku runner.py
