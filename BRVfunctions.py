@@ -32,26 +32,19 @@ def get_results(responses): #funkcja do zwracania wyników
                     data.append([transcript, res.confidence, res.semantic_interpretation])
     return [ResponseStatus.Name(response.status), data]
 
-def getReply(canRaise):
+def record(outputFile, ifCheckVolume): #funkcja do nagrywania
     import pyaudio
     import wave
-    from techmo_sarmata_pyclient.utils.wave_loader import load_wave
-    from techmo_sarmata_pyclient.service.sarmata_settings import SarmataSettings
-    from techmo_sarmata_pyclient.service.sarmata_recognize import SarmataRecognizer
-    from address_provider import AddressProvider
-    import os
     import numpy
     
     FORMAT = pyaudio.paInt16
-    MAX_VALUE = 32767
     CHANNELS = 1
     RATE = 44100
     CHUNK = 2048
-    WAVE_OUTPUT_FILENAME = "temp.wav"
-    DISTRUST_FACTOR = 0.1
+    MAX_VALUE = 32767
     TOO_LOUD_LIMIT = 0.99
     TOO_QUIET_LIMIT = 0.4
-     
+    
     audio = pyaudio.PyAudio()
     
     # start Recording
@@ -79,38 +72,50 @@ def getReply(canRaise):
     stream.close()
     audio.terminate()
      
-    waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+    waveFile = wave.open(outputFile, 'wb')
     waveFile.setnchannels(CHANNELS)
     waveFile.setsampwidth(audio.get_sample_size(FORMAT))
     waveFile.setframerate(RATE)
     waveFile.writeframes(b''.join(frames))
     waveFile.close()
     
-    #check volume of recording
-    maxValue = 0
-    for chunk in frames:
-        for value in numpy.abs(numpy.fromstring(chunk, dtype=numpy.int16)):
-            if value > maxValue:
-                maxValue = value
-    if maxValue < MAX_VALUE * TOO_QUIET_LIMIT:
-        print("Zbyt cichy sygnał")
-    elif maxValue > MAX_VALUE * TOO_LOUD_LIMIT:
-        print("Zbyt głośny sygnał")
+    if ifCheckVolume == True:
+        #check volume of recording
+        maxValue = 0
+        for chunk in frames:
+            for value in numpy.abs(numpy.fromstring(chunk, dtype=numpy.int16)):
+                if value > maxValue:
+                    maxValue = value
+        if maxValue < MAX_VALUE * TOO_QUIET_LIMIT:
+            print("Zbyt cichy sygnał")
+        elif maxValue > MAX_VALUE * TOO_LOUD_LIMIT:
+            print("Zbyt głośny sygnał")
+
+def getReply(canRaise):
+    from techmo_sarmata_pyclient.utils.wave_loader import load_wave
+    from techmo_sarmata_pyclient.service.sarmata_settings import SarmataSettings
+    from techmo_sarmata_pyclient.service.sarmata_recognize import SarmataRecognizer
+    from address_provider import AddressProvider
+    import os
+    
+    WAVE_OUTPUT_FILENAME = "temp.wav"
+    DISTRUST_FACTOR = 0.1
+    
+    record(WAVE_OUTPUT_FILENAME, True)
     
     #analyze
     #if __name__ == '__main__':
     ap = AddressProvider()
-    wave_file = "temp.wav"
     if canRaise == True: 
         grammar_file = "grammars/grammar_canraise.abnf"
     else:
         grammar_file = "grammars/grammar_cannotraise.abnf"
     address = ap.get("sarmata")
     
-    audio = load_wave(wave_file)
+    audio = load_wave(WAVE_OUTPUT_FILENAME)
     
     settings = SarmataSettings()
-    session_id = os.path.basename(wave_file)
+    session_id = os.path.basename(WAVE_OUTPUT_FILENAME)
     settings.set_session_id(session_id)
     settings.load_grammar(grammar_file)
     
