@@ -13,8 +13,7 @@ class UstawieniaGry:
         self.ciemne = 10
 
 
-
-
+warnings.simplefilter("ignore")
 
 def Main():
     host = "127.0.0.1"
@@ -34,7 +33,7 @@ def Main():
 
 
     ustawienia = UstawieniaGry(2)
-    gracze = []
+    gracze = list()
     for i in range(0, ustawienia.liczba_graczy):
         gracze.append(poker.Gracz(i))
     sprawdz = Evaluator()
@@ -93,7 +92,7 @@ def Main():
                     # wypisywanie info
                     global_info += "\n**************Teraz gracz %s***************" % (aktywny + 1)
                     global_info += stol.wypisz_karty_na_stole()
-                    global_info += '\n' + gracze[aktywny].wypisz_karty_gracza(aktywny + 1)
+                    global_info += '\n' + gracze[aktywny].wypisz_karty_gracza()
                     global_info += "\nNajwyższa stawka na stole: " + str(najwyzsza_stawka)
                     global_info += "\nTwoja stawka: " + str(stol.stawki_graczy[aktywny])
                     global_info += "\nKapital: " + str(gracze[aktywny].kapital)
@@ -164,20 +163,20 @@ def Main():
         elif zwyciezca == -1:  # tu nastąpi sprawdzanie kart
             global_info = "\n****************Sprawdzenie kart*****************"
             global_info += stol.wypisz_karty_na_stole()
-
-            wyniki = []
-            print()
             for g in gracze:
-                g.wypisz_karty_gracza()
-                wyniki.append(sprawdz.evaluate(stol.karty, g.reka))
-                global_info += "Wynik gracza %d: %s (%d)" \
-                      % (g.id + 1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1][1])
+                global_info += g.wypisz_karty_gracza()
 
-            poker.rozdaj_pule(gracze, stol, wyniki)
+            wyniki = list()
+            for g in gracze:
+                wyniki.append(sprawdz.evaluate(stol.karty, g.reka))
+                global_info += "\nWynik gracza %d: %s (%d)" \
+                      % (g.id + 1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1])
+
+            global_info += poker.rozdaj_pule(gracze, stol, wyniki)
 
 
         # całkowity stan kapitału graczy
-        global_info += "\nStan kapitalu graczy: "
+        global_info += "\n\nStan kapitalu graczy: "
         for g in gracze:
             global_info += "\nGracz %d: %d" % (g.id + 1, g.kapital)
 

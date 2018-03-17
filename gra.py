@@ -19,7 +19,7 @@ class Paczka:
 class Gra:
     def __init__(self, liczba_graczy=2):
         self.ustawienia = Ustawienia_gry(liczba_graczy)
-        self.gracze = []  # lista 2 graczy
+        self.gracze = list()  # lista 2 graczy
         for i in range(0, liczba_graczy):
             self.gracze.append(poker.Gracz(i))
 
@@ -70,7 +70,7 @@ class Gra:
                         # wypisywanie info
                         global_info += "\n**************Teraz gracz %s***************" % (aktywny + 1)
                         global_info += stol.wypisz_karty_na_stole()
-                        global_info += '\n' + self.gracze[aktywny].wypisz_karty_gracza(aktywny + 1)
+                        global_info += '\n' + self.gracze[aktywny].wypisz_karty_gracza()
                         global_info += "\nNajwyższa stawka na stole: " + str(najwyzsza_stawka)
                         global_info += "\nTwoja stawka: " + str(stol.stawki_graczy[aktywny])
                         global_info += "\nKapital: " + str(self.gracze[aktywny].kapital)
@@ -127,15 +127,16 @@ class Gra:
                 print("\n****************Sprawdzenie kart*****************")
                 stol.wypisz_karty_na_stole()
 
-                wyniki = []
+                wyniki = list()
                 print()
                 for g in self.gracze:
                     g.wypisz_karty_gracza()
                     wyniki.append(sprawdz.evaluate(stol.karty, g.reka))
                     print("Wynik gracza %d: %s (%d)"
-                          % (g.id+1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1][1]))
+                          % (g.id+1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1]))
 
-                poker.rozdaj_pule(self.gracze, stol, wyniki)
+                global_info = poker.rozdaj_pule(self.gracze, stol, wyniki)
+                print(global_info)
 
             # całkowity stan kapitału graczy
             print("\nStan kapitalu graczy: ")

@@ -40,8 +40,8 @@ class Gracz:
         self.stan = stan_gracza["w_grze"]
         self.podbicia = 0
 
-    def wypisz_karty_gracza(self, nr):
-        return "Karty gracza %d" % nr + wypisz_karty(self.reka)
+    def wypisz_karty_gracza(self):
+        return "\nKarty gracza %d: " % (self.id+1) + wypisz_karty(self.reka)
 
 
 class Stol:
@@ -219,19 +219,19 @@ def liczba_graczy_w_licytacji(gracze):
 
 def rozdaj_pule(gracze, stol, wyniki):
     if wyniki[0] < wyniki[1]:
-        print("\n***Zwyciezca rundy zostaje gracz 1!***")
+        info = "\n***Zwyciezca rundy zostaje gracz 1!***"
         gracze[0].kapital += stol.pula
         stol.pula = 0
     elif wyniki[1] < wyniki[0]:
-        print("\n***Zwyciezca rundy zostaje gracz 2!***")
+        info = "\n***Zwyciezca rundy zostaje gracz 2!***"
         gracze[1].kapital += stol.pula
         stol.pula = 0
     else:
-        print("\n***Nastapil remis w tej rundzie.***")
+        info = "\n***Nastapil remis w tej rundzie.***"
         gracze[0].kapital += stol.pula / 2
         gracze[1].kapital += stol.pula / 2
         stol.pula = 0
-    return
+    return info
 
 
 def zresetuj_akcje(gracze, do_poczatku=False):    # reset dla nowej rundy

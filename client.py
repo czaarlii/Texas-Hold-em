@@ -2,7 +2,9 @@ import socket
 import pickle
 import poker
 import zasady
+import warnings
 
+warnings.simplefilter("ignore")
 
 def Main():
     host = '127.0.0.1'
