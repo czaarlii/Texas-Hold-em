@@ -9,10 +9,17 @@ class Ustawienia_gry:
         self.ciemne = 10
 
 
+class Paczka:
+    def __init__(self):
+        self.liczby = [0,1,2]
+        self.bool = False
+        self.string = 'abc'
+
+
 class Gra:
     def __init__(self, liczba_graczy=2):
         self.ustawienia = Ustawienia_gry(liczba_graczy)
-        self.gracze = []  # lista 2 graczy
+        self.gracze = list()  # lista 2 graczy
         for i in range(0, liczba_graczy):
             self.gracze.append(poker.Gracz(i))
 
@@ -21,7 +28,7 @@ class Gra:
         rozp = 0  # indeks gracza rozpoczynajacego licytacje
 
         # główna pętla gry
-        while (True):
+        while True:
             print("\n*******************************Kolejna runda*********************************")
 
             talia = Deck()  # talia kart
@@ -35,9 +42,11 @@ class Gra:
 
             stol.karty = talia.draw(5)
 
-            stol.doloz_stawke(self.gracze[rozp], self.ustawienia.ciemne)  # początkowa stawka na 1. turę
+            global_info = stol.doloz_stawke(self.gracze[rozp], self.ustawienia.ciemne)  # początkowa stawka na 1. turę
             self.gracze[rozp].stan = poker.stan_gracza["postawil"]
             najwyzsza_stawka = self.ustawienia.ciemne
+
+            print(global_info)
 
             # pętla 3 tur
             for tura in range(1, 4):
@@ -50,39 +59,46 @@ class Gra:
                 else:  # a nastepny() to przesunięcie iteratora na nast. gracza
                     aktywny = rozp
 
+                koniec = False
+
                 # pętla pozwalająca wykonywać akcje graczy (jeden obrót to decyzja jednego gracza)
-                while (True):
+                while True:
+                    global_info = ''
+
                     if self.gracze[aktywny].stan != poker.stan_gracza["va bank"]:  # wyjątek pomijający graczy vabank
 
                         # wypisywanie info
-                        print("\n**************Teraz gracz %s***************" % (aktywny + 1))
-                        stol.wypisz_karty_na_stole()
-                        self.gracze[aktywny].wypisz_karty_gracza(aktywny + 1)
-                        print("\nNajwyższa stawka na stole: ", najwyzsza_stawka)
-                        print("Twoja stawka: ", stol.stawki_graczy[aktywny])
-                        print("Kapital: ", self.gracze[aktywny].kapital)
+                        global_info += "\n**************Teraz gracz %s***************" % (aktywny + 1)
+                        global_info += stol.wypisz_karty_na_stole()
+                        global_info += '\n' + self.gracze[aktywny].wypisz_karty_gracza()
+                        global_info += "\nNajwyższa stawka na stole: " + str(najwyzsza_stawka)
+                        global_info += "\nTwoja stawka: " + str(stol.stawki_graczy[aktywny])
+                        global_info += "\nKapital: " + str(self.gracze[aktywny].kapital)
+                        print(global_info)
 
                         # wczytanie akcji gracza, więcej w poker.py
                         odp = poker.wczytaj_poprawna_odp(najwyzsza_stawka - stol.stawki_graczy[aktywny],
                                                          self.gracze[aktywny].kapital,
                                                          self.gracze[aktywny].podbicia)
                         # wykonanie wybranej akcji
-                        poker.podejmij_akcje(self.gracze[aktywny], odp, stol)
+                        global_info = poker.podejmij_akcje(self.gracze[aktywny], odp, stol)
+                        print(global_info)
 
                         if najwyzsza_stawka < stol.stawki_graczy[aktywny]:
                             najwyzsza_stawka = stol.stawki_graczy[aktywny]  # do info o najwyższej postawionej stawce
 
                     # obsługa spasowania
                     if self.gracze[aktywny].stan == poker.stan_gracza["spasowal"]:
-                        print("\n***Gracz %s spasowal. " % str(aktywny + 1), "***")
                         pas = poker.czy_wszyscy_spasowali(self.gracze)
                         if pas != -1:
-                            break
+                            koniec = True
 
                     # obsługa opcji wylączenia gry
                     if self.gracze[aktywny].stan == poker.stan_gracza["skonczyl"]:
-                        print("\n*****************Gracz %s poddał się!" % str(aktywny + 1), "***************")
                         zwyciezca = poker.nastepny(aktywny)
+                        koniec = True
+
+                    if koniec:
                         break
 
                     # tu jest sprawdzenie czy wszyscy gracze już coś zrobili gdy stawki są sobie równe
@@ -111,15 +127,16 @@ class Gra:
                 print("\n****************Sprawdzenie kart*****************")
                 stol.wypisz_karty_na_stole()
 
-                wyniki = []
+                wyniki = list()
                 print()
                 for g in self.gracze:
                     g.wypisz_karty_gracza()
                     wyniki.append(sprawdz.evaluate(stol.karty, g.reka))
                     print("Wynik gracza %d: %s (%d)"
-                          % (g.id+1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1][1]))
+                          % (g.id+1, sprawdz.class_to_string(sprawdz.get_rank_class(wyniki[-1])), wyniki[-1]))
 
-                poker.rozdaj_pule(self.gracze, stol, wyniki)
+                global_info = poker.rozdaj_pule(self.gracze, stol, wyniki)
+                print(global_info)
 
             # całkowity stan kapitału graczy
             print("\nStan kapitalu graczy: ")
