@@ -180,10 +180,6 @@ def Main():
         for g in gracze:
             global_info += "\nGracz %d: %d" % (g.id + 1, g.kapital)
 
-        # if zwyciezca != -1:
-        #     global_info += "\n***Zwyciezca gry zostaje gracz %d, gratulacje!!!***" % (zwyciezca + 1)
-        #     input("\nNacisnij ENTER aby kontynuowac.")
-        #     break
         if zwyciezca == -1:
             # sprawdzenie czy komuś się pieniądze skończyły
             zwyciezca = -1
@@ -207,52 +203,9 @@ def Main():
         rozp = poker.nastepny(rozp, len(gracze))
         poker.zresetuj_akcje(gracze, do_poczatku=True)
 
-
-
-
-        # data = conn.recv(1024)
-        # if not data:
-        #     break
-        # data = pickle.loads(data)
-        # print("from connected  user: " + str(data.liczby))
-        #
-        # data.bool = True
-        # #data = str(data).upper()
-        # print("sending: " + str(data.liczby))
-        # conn.send(pickle.dumps(data))
-
     conn.send(pickle.dumps(poker.PaczkaDoKlienta('\nSerwer zakonczyl polaczenie.')))
     conn.close()
     return
 
 if __name__ == '__main__':
     Main()
-
-# host = '127.0.0.1'
-# port = 4000
-#
-# s = soc.socket(soc.AF_INET, soc.SOCK_DGRAM)
-# s.bind((host, port))
-#
-# gracze = []
-# dzialaj = True
-#
-# print("Serwer uruchomiony.")
-# print('IP: ', host)
-# print("Port:", port)
-#
-# while dzialaj:
-#     try:
-#         dane, adres = s.recvfrom(1024)
-#         dane = dane.decode()
-#         if "koniec" in str(dane):
-#             dzialaj = False
-#         if adres not in gracze:
-#             gracze.append(adres)
-#
-#         print(time.ctime(time.time()), str(adres),": :", str(dane))
-#         for gracz in gracze:
-#             s.sendto(dane, gracze)
-#     except:
-#         pass
-# s.close()
