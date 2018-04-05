@@ -4,7 +4,6 @@ import poker
 from treys import Evaluator
 from treys import Deck
 import warnings
-import zasady
 
 
 class UstawieniaGry:
@@ -15,22 +14,24 @@ class UstawieniaGry:
 
 warnings.simplefilter("ignore")
 
+
 def Main():
-    host = "127.0.0.1"
+    host = input('Wpisz IP serwera (0 aby wybrac domyslne): ')
+    if int(host) == 0:
+        host = "192.168.0.100"
     port = 5000
 
     mySocket = socket.socket()
     mySocket.bind((host, port))
 
-    print('Uruchomiono serwer. \nNasluchiwanie...')
+    print('Uruchomiono serwer. \nIP: %s \nNasluchiwanie...' % host)
     mySocket.listen(1)
     conn, addr = mySocket.accept()
     print("Connection from: " + str(addr))
 
-    global_info = "Gra Texas Hold'em Poker sterowany głosowo dla 2 graczy. Zapraszamy do gry!"
+    global_info = "\n\nGra Texas Hold'em Poker sterowany głosowo dla 2 graczy. Zapraszamy do gry!"
     print(global_info)
     conn.send(global_info.encode())
-
 
     ustawienia = UstawieniaGry(2)
     gracze = list()
@@ -62,7 +63,6 @@ def Main():
         najwyzsza_stawka = ustawienia.ciemne
 
         print(global_info)
-        #paczka_tam.stol_info = global_info
         conn.send(pickle.dumps(poker.PaczkaDoKlienta(global_info)))
 
         # pętla 3 tur
@@ -80,7 +80,6 @@ def Main():
             koniec = False
 
             print(global_info)
-            #paczka_tam.stol_info = global_info
             conn.send(pickle.dumps(poker.PaczkaDoKlienta(global_info)))
 
             # pętla pozwalająca wykonywać akcje graczy (jeden obrót to decyzja jednego gracza)
@@ -111,7 +110,12 @@ def Main():
                                                                      podbicia=gracze[aktywny].podbicia,
                                                                      odp=True)))
                         odp = conn.recv(1024)
-                        odp = pickle.loads(odp).odpowiedz
+                        if odp:
+                            odp = pickle.loads(odp).odpowiedz
+                        else:
+                            print('\nUtracono polaczenie z klientem.')
+                            conn.close()
+                            return
 
                     # wykonanie wybranej akcji
                     global_info = poker.podejmij_akcje(gracze[aktywny], odp, stol)
@@ -161,12 +165,13 @@ def Main():
             gracze[pas].kapital += stol.pula
             stol.pula = 0
         elif zwyciezca == -1:  # tu nastąpi sprawdzanie kart
-            global_info = "\n****************Sprawdzenie kart*****************"
-            global_info += stol.wypisz_karty_na_stole()
+            global_info = "\n****************Sprawdzenie kart*****************\n"
+            global_info += stol.wypisz_karty_na_stole() + '\n'
             for g in gracze:
                 global_info += g.wypisz_karty_gracza()
 
             wyniki = list()
+            global_info += '\n'
             for g in gracze:
                 wyniki.append(sprawdz.evaluate(stol.karty, g.reka))
                 global_info += "\nWynik gracza %d: %s (%d)" \
@@ -204,8 +209,10 @@ def Main():
         poker.zresetuj_akcje(gracze, do_poczatku=True)
 
     conn.send(pickle.dumps(poker.PaczkaDoKlienta('\nSerwer zakonczyl polaczenie.')))
+
     conn.close()
     return
+
 
 if __name__ == '__main__':
     Main()

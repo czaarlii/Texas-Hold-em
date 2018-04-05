@@ -7,21 +7,22 @@ import warnings
 warnings.simplefilter("ignore")
 
 def Main():
-    host = '127.0.0.1'
+    host = input('Podaj IP serwera (0 aby wybrac domyslne): ')
+    if int(host) == 0:
+        host = "192.168.0.100"
     port = 5000
 
     mySocket = socket.socket()
     mySocket.connect((host, port))
     print(mySocket.recv(1024).decode())
-    #zasady.zasadygry()
+    zasady.zasadygry()
 
-    paczka = poker.PaczkaDoKlienta()
     while True:
 
-        paczka = pickle.loads(mySocket.recv(1024))
-
+        paczka = mySocket.recv(1024)
         if not paczka:
             break
+        paczka = pickle.loads(paczka)
 
         print(paczka.akcja_info)
         print(paczka.stol_info)

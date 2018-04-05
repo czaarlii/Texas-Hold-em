@@ -7,6 +7,7 @@ gapic-google-cloud-speech-v1
 grpc-google-cloud-speech-v1
 proto-google-cloud-speech-v1
 pyaudio
+treys
 wave
 os
 numpy
