@@ -16,22 +16,23 @@ warnings.simplefilter("ignore")
 
 
 def Main():
-    host = input('Wpisz IP serwera (0 aby wybrac domyslne): ')
-    if int(host) == 0:
-        host = "192.168.0.100"
+    host = input('>>Wpisz IP serwera (0 aby wybrac domyslne): ')
+    if str(host) == '0':
+        host = "127.0.0.1"
     port = 5000
 
-    mySocket = socket.socket()
+    mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     mySocket.bind((host, port))
 
-    print('Uruchomiono serwer. \nIP: %s \nNasluchiwanie...' % host)
+    print('>>Uruchomiono serwer. \nIP: %s \nNasluchiwanie...' % host)
     mySocket.listen(1)
     conn, addr = mySocket.accept()
-    print("Connection from: " + str(addr))
+    print(">>Connection from: " + str(addr))
 
     global_info = "\n\nGra Texas Hold'em Poker sterowany głosowo dla 2 graczy. Zapraszamy do gry!"
     print(global_info)
     conn.send(global_info.encode())
+    # conn.recv(1024)
 
     ustawienia = UstawieniaGry(2)
     gracze = list()
@@ -189,9 +190,9 @@ def Main():
             # sprawdzenie czy komuś się pieniądze skończyły
             zwyciezca = -1
             if gracze[0].kapital == 0:
-                zwyciezca = 2
-            elif gracze[1].kapital == 0:
                 zwyciezca = 1
+            elif gracze[1].kapital == 0:
+                zwyciezca = 0
 
         if zwyciezca != -1:
             global_info += "\n\n***Zwyciezca gry zostaje gracz %d, gratulacje!!!***" % (zwyciezca + 1)
@@ -211,6 +212,7 @@ def Main():
     conn.send(pickle.dumps(poker.PaczkaDoKlienta('\nSerwer zakonczyl polaczenie.')))
 
     conn.close()
+    print('>>Zakonczono polaczenie')
     return
 
 

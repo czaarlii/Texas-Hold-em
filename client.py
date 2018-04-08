@@ -6,16 +6,18 @@ import warnings
 
 warnings.simplefilter("ignore")
 
+
 def Main():
-    host = input('Podaj IP serwera (0 aby wybrac domyslne): ')
-    if int(host) == 0:
-        host = "192.168.0.100"
+    host = input('>>Podaj IP serwera (0 aby wybrac domyslne): ')
+    if str(host) == '0':
+        host = "127.0.0.1"
     port = 5000
 
-    mySocket = socket.socket()
+    mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     mySocket.connect((host, port))
     print(mySocket.recv(1024).decode())
-    zasady.zasadygry()
+    # zasady.zasadygry()
+    # mySocket.send(''.encode())
 
     while True:
 
@@ -37,6 +39,7 @@ def Main():
             mySocket.send(pickle.dumps(poker.PaczkaDoSerwera(odp)))
 
     mySocket.close()
+    print('>>Zakonczono polaczenie.')
 
 
 if __name__ == '__main__':
