@@ -153,7 +153,7 @@ def podejmij_akcje(gracz, akcja, stol):
         wiadomosc = stol.doloz_stawke(gracz, gracz.kapital)
         gracz.stan = stan_gracza["va bank"]
     elif akcja == -6:
-        wiadomosc = "\n*****************Gracz %s poddał się!" % str(gracz.id + 1), "***************"
+        wiadomosc = '\n*****************Gracz %s poddał się!' % str(gracz.id + 1) + "***************"
         gracz.stan = stan_gracza["skonczyl"]
     else:
         wiadomosc = stol.doloz_stawke(gracz, int(akcja))
@@ -218,16 +218,17 @@ def liczba_graczy_w_licytacji(gracze):
 
 
 def rozdaj_pule(gracze, stol, wyniki):
+    info = '\n'
     if wyniki[0] < wyniki[1]:
-        info = "\n***Zwyciezca rundy zostaje gracz 1!***"
+        info += "\n***Zwyciezca rundy zostaje gracz 1!***"
         gracze[0].kapital += stol.pula
         stol.pula = 0
     elif wyniki[1] < wyniki[0]:
-        info = "\n***Zwyciezca rundy zostaje gracz 2!***"
+        info += "\n***Zwyciezca rundy zostaje gracz 2!***"
         gracze[1].kapital += stol.pula
         stol.pula = 0
     else:
-        info = "\n***Nastapil remis w tej rundzie.***"
+        info += "\n***Nastapil remis w tej rundzie.***"
         gracze[0].kapital += stol.pula / 2
         gracze[1].kapital += stol.pula / 2
         stol.pula = 0
